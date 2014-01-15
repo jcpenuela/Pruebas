@@ -34,7 +34,8 @@ def analiza(query):
     print('----------------------------------------------------------')
     print('Análisis:', query)
     print('Elementos: ', len(query))
-    query = normaliza_raiz(query)
+    print('Normalizando....')
+    query = normalizar(query)
     print('Normalizada:',query)
     # for registro_numero, registro in datos.items():
     #    print(registro_numero, end='... ')
@@ -47,16 +48,24 @@ def normalizar(nodo, nivel=1):
     
     print('.'*nivel, end='')
     print('- nomalizando nodo=',nodo)
+    
     if len(nodo)>1:
         # Hay un AND
         # {'ciudad':['Sevilla','Huelva'], 'edad':30} =>
+        # [{'ciudad':['Sevilla','Huelva'], 'edad':30}] =>
         # {'$and':[{'ciudad':['Sevilla','Huelva']}, {'edad':30}]}
         print('.'*nivel, end='')
         print('- nodo es: ', nodo.__class__.__name__, ' y tiene elementos:',len(nodo))
         nq = dict()
         nq['$and'] = list()
-        for k,v in nodo.items():
-            nq['$and'].append(normalizar({k: v},nivel+1))
+        
+        if isinstance(nodo, list) or isinstance(nodo, set) or isinstance(nodo, tuple):
+            for v in nodo:
+                nq['$and'].append(normalizar(v,nivel+1))
+        
+        elif isinstance(nodo, dict):
+            for k,v in nodo.items():
+                nq['$and'].append(normalizar({k: v},nivel+1))
         return nq
     
     else:
@@ -91,18 +100,37 @@ def normalizar(nodo, nivel=1):
             # es operador lógico
             print('.'*nivel, end='')
             print('- k es operador lógico')
-            nv = dict()
-            nv[k] = list()
-            print('.'*nivel, end='')
-            print('- v`s a normalizar (', len(v),'):', v)
-            for i in v:
-                print('.'*nivel, end='')
-                print('  - elemento i para norm:',i)
-                nv[k].append(normalizar(i, nivel+1))
-            return nv
+            # Si la lista que acompaña al operador solo tiene un elemento
+            # contamos, de momento, con que los operadores son de lista de elementos
+            # teniendo en cuenta que tenemos que introducir operadores unarios {'$not':{'ciudad':'sevilla'}}
+            
+            if isinstance(v,list) or isinstance(v,tuple) or isinstance(v,set) or isinstance(v,dict):            
+                if len(v) == 1:
+                    # Por ejemplo: {'$or':[{'ciudad':'Sevilla'}]}
+                    # Pasa a convertirse en {'ciudad':'Sevilla'}
+                    print('.'*nivel, end='')
+                    print('- v es de tipo ', v.__class__.__name__)
+                    if isinstance(v,list) or isinstance(v,tuple) or isinstance(v,set):
+                        return normalizar(v[0], nivel+1)
+                    else:
+                        # en caso de tupla se recoje como un elemento suelto... no se por qué!
+                        return normalizar(v, nivel+1)
+                else:
+                    # el operador trae una lista como parámetros de entrada
+                    nv = dict()
+                    nv[k] = list() # Elemento con el operador como clave
+                    print('.'*nivel, end='')
+                    print('- v`s a normalizar (', len(v),'):', v)
+                    for i in v:
+                        print('.'*nivel, end='')
+                        print('  - elemento i para norm:',i)
+                        nv[k].append(normalizar(i, nivel+1))
+                    return nv
+            else:
+                print('ERROR: v debe ser un valor iterable')
+                raise Exception('¿¿Pero esto que es...??','{<OperadorLógico>:<lista>|<dict>|<set>|<tupla>}')
     
-    
-def normaliza_raiz(query):    
+def xnormaliza_raiz(query):    
     nq = dict()
     if len(query)>1:
         # Hay un AND
@@ -120,14 +148,17 @@ if __name__ == '__main__':
     
     analiza({'ciudad':'Sevilla'})
     analiza({'ciudad':['Sevilla','Huelva']})  
-    analiza({'ciudad':['Sevilla','Huelva'], 'edad':30})    
+    analiza({'ciudad':['Sevilla','Huelva'], 'edad':30})
+    # print('>>>>>>>>>>>>>>')
+    analiza([{'ciudad':['Sevilla','Huelva']}, {'edad':30}])
+    analiza({'$or':({'ciudad':'Sevilla'},{'edad':30})})
+    # analiza({'$or':1})
+    
     analiza({'ciudad':['Sevilla','Huelva'], 'edad':{'$gte':30}})    
     analiza({'$or':[{'ciudad':'Sevilla'}, {'edad':{'$gte':30}}]})
     # print('>>>>>>>>>')
     analiza({'$or':[{'ciudad':'Sevilla', 'edad':{'$lte':31}}, {'edad':{'$gte':30}}]})
-    
     analiza({'$or':[ {'ciudad':'Sevilla'}, {'edad':{'$gte':30}} ], 'peso':{'$gte':60}})
-    
     analiza({'$or':[{'ciudad':'Sevilla'}, {'edad':{'$gte':30}}],  '$and':[{'peso':{'$gte':60}},{'ciudad':{'$ne':'Córdoba'}}]})
     
     
