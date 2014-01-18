@@ -5,10 +5,11 @@ Created on 05/01/2014
 '''
 import hashlib
 class Persona(object):
-    def __init__(self, nombre, ciudad = None, edad = None):
+    def __init__(self, nombre, ciudad = None, edad = None, peso = None):
         self.nombre = nombre
         self.ciudad = ciudad
         self.edad = edad
+        self.peso = peso
         
     def __eq__(self, *args, **kwargs):
         return args[0].key == self.key()
