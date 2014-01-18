@@ -1,13 +1,37 @@
 # interpreta
+def operadores():
+    comparison_operators = {
+        '$eq':'eq',     # { field: {$eq: value} }
+        '$ne':'ne',     # { field: {$ne: value} }
+        '$gt':'gt',     # { field: {$gt: value} }
+        '$gte':'gte',   # { field: {$gte: value} }
+        '$lt':'lt',     # { field: {$lt: value} }
+        '$lte':'lte',   # { field: {$lte: value} }
+        '$in':'in',     # { field: {$in: [<value1>, <value2>, ... <valueN> ]} }
+        '$nin':'nin'    # { field: {$nin: [ <value1>, <value2> ... <valueN> ]} }
+        }
+    logical_operators = {
+        '$or':'eq',     # { $or: [ { <expression1> }, { <expression2> }, ... , { <expressionN> } ] }
+        '$and':'ne',    # { $and: [ { <expression1> }, { <expression2> } , ... , { <expressionN> } ] }
+        '$not':'gt',    # { field: { $not: { <operator-expression> } } }
+        '$nor':'gte'    # { $nor: [ { <expression1> }, { <expression2> }, ...  { <expressionN> } ] }
+        }
 
-def evalua(expresion, objeto):
-    
-    return True
+
+
 
 def interpreta(query, datos):
     # {'$or': [{'ciudad': {'$eq': 'Sevilla'}}, {'$not': {'edad': {'$eq': 30}}}]} 
     # {'$not': {'$or': [{'ciudad': {'$eq': 'Sevilla'}}, {'edad': {'$gte': 30}}]}}
     # {'$not': {'$or': [{'ciudad': {'$eq': 'Sevilla'}}, {'edad': {'$gte': 30}}, {'edad': {'$eq': 49}}]}} 
+    
+    
+    # IMPORTANTE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+    # class Person(object):
+    #     def addattr(self,x,val):
+    #        self.__dict__[x]=val
+    # Método de añadir de forma dinámica una variable a un objeto
+    
     '''
     '''
     nodes_selected = list()
@@ -22,6 +46,7 @@ def interpreta(query, datos):
             nodes_selected.append({ds_id:ds_element})
         
     return nodes_selected
+    
     
 def cumple(query, ds_element):
     # print(query)
@@ -48,11 +73,16 @@ def cumple(query, ds_element):
                     return True
         else:
             # es campo:expresion
+            # Método usando EVAL
             # exp1 = eval('ds_element.'+lval)
+            # Método usando __dict__     
+            # exp1 = ds_element.__dict__[lval]
             exp1 = ds_element[lval]
+            
+            
             op = list(rval.items())[0][0]
             exp2 = list(rval.items())[0][1]
-            print('lval:', lval, 'op:',op,'valor:',exp2)
+            # print('lval:', lval, 'op:',op,'valor:',exp2)
             if op == '$eq':
                 if exp1 == exp2:
                     return True

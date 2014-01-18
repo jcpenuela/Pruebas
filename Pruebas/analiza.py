@@ -1,6 +1,4 @@
-def analiza(query):
-    datos = carga_datos()
-    # print(datos)
+def operadores():
     comparison_operators = {
         '$eq':'eq',     # { field: {$eq: value} }
         '$ne':'ne',     # { field: {$ne: value} }
@@ -17,19 +15,6 @@ def analiza(query):
         '$not':'gt',    # { field: { $not: { <operator-expression> } } }
         '$nor':'gte'    # { $nor: [ { <expression1> }, { <expression2> }, ...  { <expressionN> } ] }
         }
-    print('----------------------------------------------------------')
-    print('Análisis:', query)
-    print('Elementos: ', len(query))
-    print('Normalizando....')
-    query = normalizar(query)
-    print('Normalizada:',query)
-    # for registro_numero, registro in datos.items():
-    #    print(registro_numero, end='... ')
-        # aplicar búsqueda
-    
-
-    print('\nFin análisis....\n')
-    
 
 def normalizar(nodo, nivel=1):
     '''
@@ -157,12 +142,15 @@ if __name__ == '__main__':
     # analiza({'ciudad':['Sevilla','Huelva']})  
     # analiza({'ciudad':['Sevilla','Huelva'], 'edad':30})
     # analiza([{'ciudad':['Sevilla','Huelva']}, {'edad':30}])
-    analiza({'$or':({'ciudad':'Sevilla'},{'$not':{'edad':30}})})
+    nq = normalizar({'$or':({'ciudad':'Sevilla'},{'$not':{'edad':30}})})
+    print(nq)
     # analiza({'$or':1})
     # analiza({'ciudad':['Sevilla','Huelva'], 'edad':{'$gte':30}})    
     # analiza({'$or':[{'ciudad':'Sevilla'}, {'edad':{'$gte':30}}]})
-    analiza({'$not':{'$or':[{'ciudad':'Sevilla'}, {'edad':{'$gte':30}}]}})
-    analiza({'$not':{'$or':[{'ciudad':'Sevilla'}, {'edad':{'$gte':30}}, {'edad':49}]}})
+    nq = normalizar({'$not':{'$or':[{'ciudad':'Sevilla'}, {'edad':{'$gte':30}}]}})
+    print(nq)
+    nq = normalizar({'$not':{'$or':[{'ciudad':'Sevilla'}, {'edad':{'$gte':30}}, {'edad':49}]}})
+    print(nq)
     # analiza({'$or':[{'ciudad':'Sevilla', 'edad':{'$lte':31}}, {'edad':{'$gte':30}}]})
     # analiza({'$or':[ {'ciudad':'Sevilla'}, {'edad':{'$gte':30}} ], 'peso':{'$gte':60}})
     # analiza({'$or':[{'ciudad':'Sevilla'}, {'edad':{'$gte':30}}],  '$and':[{'peso':{'$gte':60}},{'ciudad':{'$ne':'Córdoba'}}]})
