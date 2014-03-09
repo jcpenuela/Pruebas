@@ -15,7 +15,7 @@ class Fact(object):
             return False
         
     def __hash__(self):
-        return int(hashlib.md5('hola'.encode()).hexdigest(),16)
+        return int(hashlib.md5(self.hecho.encode()).hexdigest(),16)
     
     def indice_fact(self):
         return '_' + self.hecho + '_'
